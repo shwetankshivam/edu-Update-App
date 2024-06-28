@@ -29,7 +29,7 @@ class _LoginState extends State<Login> {
 
                 //app logo
                 const Icon(
-                  CupertinoIcons.person,
+                  CupertinoIcons.person_crop_circle,
                   size: 60,
                   color: Colors.black,
                 ),
@@ -53,7 +53,7 @@ class _LoginState extends State<Login> {
                     obsecureText: false,
                     hintText: "name@s.amity.edu"),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 15),
 
                 //password
                 MyTextField(
@@ -62,10 +62,30 @@ class _LoginState extends State<Login> {
                     hintText: "Password"),
                 const SizedBox(height: 30),
                 //sign in button
-                
-                MyButton(text: "Login", ontap: () {})
+
+                MyButton(text: "Login", ontap: () {}),
+                const SizedBox(height: 20),
 
                 //register page
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'new user?',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w300),
+                    ),
+                    Text(
+                      'Register here',
+                      style: TextStyle(
+                          color: Colors.blue.shade700,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
