@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "784965918678",
+    "project_id": "edu-update-app",
+    "storage_bucket": "edu-update-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:784965918678:android:493764c8fb07824d290e77",
+        "android_client_info": {
+          "package_name": "com.shiv.edupdate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBELZfWG54t5wB3MvokYm-IRonYoC0hFx8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

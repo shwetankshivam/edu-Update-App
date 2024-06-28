@@ -4,7 +4,8 @@ import 'package:update/utils/MyButton.dart';
 import 'package:update/utils/TextField.dart';
 
 class Register extends StatefulWidget {
-  const Register({super.key});
+  final Function()? onTap;
+  const Register({super.key, required this.onTap});
 
   @override
   State<Register> createState() => _RegisterState();
@@ -83,7 +84,7 @@ class _RegisterState extends State<Register> {
                 const SizedBox(height: 20),
                 //sign in button
 
-                MyButton(text: "Sign up", ontap: () {}),
+                MyButton(text: "Sign up", onTap: () {}),
                 const SizedBox(height: 20),
 
                 //register page
@@ -97,12 +98,16 @@ class _RegisterState extends State<Register> {
                           fontSize: 12,
                           fontWeight: FontWeight.w300),
                     ),
-                    Text(
-                      'Login here.',
-                      style: TextStyle(
+                    GestureDetector(
+                      onTap: widget.onTap,
+                      child: Text(
+                        'Login here.',
+                        style: TextStyle(
                           color: Colors.blue.shade700,
                           fontWeight: FontWeight.bold,
-                          fontSize: 15),
+                          fontSize: 15,
+                        ),
+                      ),
                     ),
                   ],
                 ),

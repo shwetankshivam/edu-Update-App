@@ -1,10 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:update/utils/MyButton.dart';
 import 'package:update/utils/TextField.dart';
 
 class Login extends StatefulWidget {
-  const Login({super.key});
+  final Function()? onTap;
+  const Login({super.key, required this.onTap});
 
   @override
   State<Login> createState() => _LoginState();
@@ -13,6 +16,11 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final emailTextController = TextEditingController();
   final passwordTextController = TextEditingController();
+
+  void signIn() async {
+    await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailTextController.text, password: passwordTextController.text);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,9 +69,13 @@ class _LoginState extends State<Login> {
                     obsecureText: true,
                     hintText: "Password"),
                 const SizedBox(height: 30),
+
                 //sign in button
 
-                MyButton(text: "Login", ontap: () {}),
+                MyButton(
+                  text: "Login",
+                  onTap: signIn,
+                ),
                 const SizedBox(height: 20),
 
                 //register page
@@ -77,12 +89,15 @@ class _LoginState extends State<Login> {
                           fontSize: 15,
                           fontWeight: FontWeight.w300),
                     ),
-                    Text(
-                      'Register here',
-                      style: TextStyle(
-                          color: Colors.blue.shade700,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15),
+                    GestureDetector(
+                      onTap: widget.onTap,
+                      child: Text(
+                        'Register here',
+                        style: TextStyle(
+                            color: Colors.blue.shade700,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15),
+                      ),
                     ),
                   ],
                 ),
