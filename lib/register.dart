@@ -19,6 +19,7 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -98,6 +99,7 @@ class _RegisterState extends State<Register> {
                           fontSize: 12,
                           fontWeight: FontWeight.w300),
                     ),
+                    const SizedBox(width: 6),
                     GestureDetector(
                       onTap: widget.onTap,
                       child: Text(

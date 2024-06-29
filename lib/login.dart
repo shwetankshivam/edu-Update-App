@@ -25,6 +25,7 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -89,6 +90,7 @@ class _LoginState extends State<Login> {
                           fontSize: 15,
                           fontWeight: FontWeight.w300),
                     ),
+                    const SizedBox(width: 6),
                     GestureDetector(
                       onTap: widget.onTap,
                       child: Text(
