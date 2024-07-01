@@ -1,3 +1,5 @@
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:update/utils/MyButton.dart';
@@ -15,6 +17,52 @@ class _RegisterState extends State<Register> {
   final emailTextController = TextEditingController();
   final passwordTextController = TextEditingController();
   final confirmPasswordTextController = TextEditingController();
+
+  void signUp() async {
+    //progress circle
+    showDialog(
+      context: context,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator.adaptive(),
+      ),
+    );
+
+    if (passwordTextController.text != confirmPasswordTextController.text) {
+      //pop progress circle
+      Navigator.pop(context);
+
+      //show error message
+      displayMessage("Passwords don't match!");
+      return;
+    }
+
+    //try creating the user
+
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: emailTextController.text,
+          password: passwordTextController.text);
+
+      //pop progrss circle
+      if (context.mounted) Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      //pop progress circle
+      Navigator.pop(context);
+
+      //show user the error message
+      displayMessage(e.code);
+    }
+  }
+  // error message
+
+  void displayMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(message),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,9 +131,10 @@ class _RegisterState extends State<Register> {
                     obsecureText: true,
                     hintText: "Confirm Password"),
                 const SizedBox(height: 20),
-                //sign in button
 
-                MyButton(text: "Sign up", onTap: () {}),
+                //sign up button
+
+                MyButton(text: "Sign up", onTap: signUp),
                 const SizedBox(height: 20),
 
                 //register page

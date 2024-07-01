@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:update/utils/MyButton.dart';
@@ -18,8 +17,41 @@ class _LoginState extends State<Login> {
   final passwordTextController = TextEditingController();
 
   void signIn() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailTextController.text, password: passwordTextController.text);
+    //progress circle
+    showDialog(
+        context: context,
+        builder: (context) => const Center(
+              child: CircularProgressIndicator.adaptive(),
+            ));
+
+    //try signing in
+
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailTextController.text,
+          password: passwordTextController.text);
+
+      //pop progrss circle
+
+      if (context.mounted) Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      //pop progress circle
+      Navigator.pop(context);
+
+      //display error message
+      displayMessage(e.code);
+    }
+  }
+
+  // error message
+
+  void displayMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(message),
+      ),
+    );
   }
 
   @override
