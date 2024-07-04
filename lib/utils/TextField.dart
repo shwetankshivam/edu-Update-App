@@ -17,13 +17,13 @@ class MyTextField extends StatelessWidget {
       obscureText: obsecureText,
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.black),
+            borderSide: const BorderSide(color: Colors.black),
             borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.black),
+            borderSide: const BorderSide(color: Colors.black),
             borderRadius: BorderRadius.circular(12)),
         hintText: hintText,
-        hintStyle: TextStyle(color: Colors.grey),
+        hintStyle: const TextStyle(color: Colors.grey),
       ),
     );
   }

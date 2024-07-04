@@ -9,7 +9,7 @@ class DeleteButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: const Icon(
+      child: Icon(
         CupertinoIcons.delete_simple,
         color: Colors.grey,
         size: 20,

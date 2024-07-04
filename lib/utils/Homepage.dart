@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:update/helper/helper_method.dart';
 import 'package:update/utils/FeedPost.dart';
-import 'package:update/utils/MyButton.dart';
+// import 'package:update/utils/MyButton.dart';
 import 'package:update/utils/TextField.dart';
 
 class Homepage extends StatefulWidget {
@@ -133,7 +133,7 @@ class _HomepageState extends State<Homepage> {
             SafeArea(
               child: Text(
                 "logged in as ${currentUser.email!}",
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.black,
                   fontSize: 14,
                 ),

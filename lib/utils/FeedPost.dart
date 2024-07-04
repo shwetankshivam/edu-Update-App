@@ -235,7 +235,7 @@ class _FeedPostState extends State<FeedPost> {
                         color: Colors.grey.shade700,
                         fontWeight: FontWeight.normal),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   if (widget.user == currentUser.email)
                     DeleteButton(onTap: deletePost),
                 ],
