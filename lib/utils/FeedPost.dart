@@ -92,23 +92,22 @@ class _FeedPostState extends State<FeedPost> {
           ],
         ),
       );
+    }
 
-      //access document in firebase
-      DocumentReference postRef = FirebaseFirestore.instance
-          .collection('User Posts')
-          .doc(widget.postId);
+    //access document in firebase
+    DocumentReference postRef =
+        FirebaseFirestore.instance.collection('User Posts').doc(widget.postId);
 
-      if (isliked) {
-        //if post is liked, add user's email to the likes field
-        postRef.update({
-          'Likes': FieldValue.arrayUnion([cureentUser.email])
-        });
-      } else {
-        //if post is unliked, remove user's email to the likes field
-        postRef.update({
-          'Likes': FieldValue.arrayRemove([cureentUser.email])
-        });
-      }
+    if (isliked) {
+      //if post is liked, add user's email to the likes field
+      postRef.update({
+        'Likes': FieldValue.arrayUnion([cureentUser.email])
+      });
+    } else {
+      //if post is unliked, remove user's email to the likes field
+      postRef.update({
+        'Likes': FieldValue.arrayRemove([cureentUser.email])
+      });
     }
   }
 
