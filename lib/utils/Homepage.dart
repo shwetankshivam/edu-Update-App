@@ -31,6 +31,7 @@ postMessage() {
       'UserEmail': currentUser.email,
       'Message': textController.text,
       'TimeStamp': Timestamp.now(),
+      'Likes': [],
     });
   }
 
@@ -85,6 +86,8 @@ class _HomepageState extends State<Homepage> {
                         return FeedPost(
                           message: post["Message"],
                           user: post["UserEmail"],
+                          postId: post.id,
+                          likes: List<String>.from(post['Likes'] ?? []),
                           // time: time)
                         );
                       },
@@ -129,7 +132,7 @@ class _HomepageState extends State<Homepage> {
             SafeArea(
               child: Text(
                 "logged in as ${currentUser.email!}",
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.black,
                   fontSize: 14,
                 ),
