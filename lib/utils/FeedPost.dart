@@ -3,25 +3,31 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:update/helper/helper_method.dart';
 import 'package:update/utils/Like_Button.dart';
+import 'package:update/utils/comment.dart';
 import 'package:update/utils/comment_button.dart';
 
 class FeedPost extends StatefulWidget {
   final String message;
   final String user;
   final String postId;
+  final String time;
   final List<String> likes;
 
   // final String time;
-  const FeedPost({
-    super.key,
-    required this.message,
-    required this.user,
-    required this.postId,
-    required this.likes,
+  const FeedPost(
+      {super.key,
+      required this.message,
+      required this.user,
+      required this.postId,
+      required this.likes,
+      required this.time
 
-    // required this.time,
-  });
+      // required this.time,
+      });
 
   @override
   State<FeedPost> createState() => _FeedPostState();
@@ -29,7 +35,7 @@ class FeedPost extends StatefulWidget {
 
 class _FeedPostState extends State<FeedPost> {
   //user
-  final cureentUser = FirebaseAuth.instance.currentUser!;
+  final currentUser = FirebaseAuth.instance.currentUser!;
   bool isliked = false;
   //comment text controller
   final commentTextController = TextEditingController();
@@ -37,7 +43,7 @@ class _FeedPostState extends State<FeedPost> {
   @override
   void initState() {
     super.initState();
-    isliked = widget.likes.contains(cureentUser.email);
+    isliked = widget.likes.contains(currentUser.email);
   }
 
   //toggle likes
@@ -46,54 +52,6 @@ class _FeedPostState extends State<FeedPost> {
       isliked = !isliked;
     });
 
-    //add a comment
-    void addComment(String commentText) {
-      //write a comment in comment collection in firestore
-      FirebaseFirestore.instance
-          .collection('User Posts')
-          .doc(widget.postId)
-          .collection("comments")
-          .add({
-        "CommentText": commentText,
-        "CommentedBy": cureentUser.email,
-        "CommentTime": Timestamp.now()
-      });
-    }
-
-    //dialog to add a comment
-
-    void showCommentBox() {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Add Comment"),
-          content: TextField(
-            controller: commentTextController,
-            decoration: const InputDecoration(hintText: "reply to this Update"),
-          ),
-          actions: [
-            //save
-            TextButton(
-              onPressed: () {
-                addComment(commentTextController.text);
-                commentTextController.clear();
-              },
-              child: const Text("reply"),
-            ),
-
-            //cancel
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                commentTextController.clear();
-              },
-              child: const Text("cancel"),
-            ),
-          ],
-        ),
-      );
-    }
-
     //access document in firebase
     DocumentReference postRef =
         FirebaseFirestore.instance.collection('User Posts').doc(widget.postId);
@@ -101,14 +59,92 @@ class _FeedPostState extends State<FeedPost> {
     if (isliked) {
       //if post is liked, add user's email to the likes field
       postRef.update({
-        'Likes': FieldValue.arrayUnion([cureentUser.email])
+        'Likes': FieldValue.arrayUnion([currentUser.email])
       });
     } else {
       //if post is unliked, remove user's email to the likes field
       postRef.update({
-        'Likes': FieldValue.arrayRemove([cureentUser.email])
+        'Likes': FieldValue.arrayRemove([currentUser.email])
       });
     }
+  }
+
+//add a comment
+  void addComment(String commentText) {
+    //write a comment in comment collection in firestore
+    FirebaseFirestore.instance
+        .collection('User Posts')
+        .doc(widget.postId)
+        .collection("Comments")
+        .add({
+      "CommentText": commentText,
+      "CommentedBy": currentUser.email,
+      "CommentTime": Timestamp.now()
+    });
+  }
+
+  //dialog to add a comment
+
+  void showCommentBox() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text(
+          "Update",
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.black,
+          ),
+        ),
+        content: TextField(
+          controller: commentTextController,
+          decoration: const InputDecoration(
+            hintText: "reply to this update..",
+          ),
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 16,
+          ),
+        ),
+        actions: [
+          //cancel
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              commentTextController.clear();
+            },
+            child: const Text(
+              "Cancel",
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ),
+          //save
+          TextButton(
+            onPressed: () {
+              addComment(commentTextController.text);
+              //pop comment box
+              Navigator.pop(context);
+
+              //clear comment line
+              commentTextController.clear();
+            },
+            child: const Text(
+              "Done",
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -127,11 +163,26 @@ class _FeedPostState extends State<FeedPost> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               //user and post
-              Text(
-                widget.user,
-                style: const TextStyle(color: Colors.black45),
+              Row(
+                children: [
+                  Text(
+                    widget.user,
+                    style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.normal),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    widget.time,
+                    style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.normal),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 3),
               Text(widget.message),
             ],
           ),
@@ -161,7 +212,7 @@ class _FeedPostState extends State<FeedPost> {
               Column(
                 children: [
                   //comment button,
-                  CommentButton(onTap: () {}),
+                  CommentButton(onTap: showCommentBox),
                   const SizedBox(height: 1),
                   //comment counter
                   Text(
@@ -172,6 +223,42 @@ class _FeedPostState extends State<FeedPost> {
               ),
             ],
           ),
+
+          //comments under post
+          Column(
+            children: [
+              StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection("User Posts")
+                      .doc(widget.postId)
+                      .collection("Comments")
+                      .orderBy("CommentTime", descending: true)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    //show the loading circle if data empty
+                    if (!snapshot.hasData) {
+                      return const Center(
+                        child: CircularProgressIndicator.adaptive(),
+                      );
+                    }
+                    return ListView(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: snapshot.data!.docs.map((doc) {
+                        //get the comments from firebase
+                        final commentData = doc.data() as Map<String, dynamic>;
+
+                        //return to the listview
+                        return Comment(
+                          text: commentData["CommentText"],
+                          time: commentData["CommentedBy"],
+                          user: formatDate(commentData["CommentTime"]),
+                        );
+                      }).toList(),
+                    );
+                  }),
+            ],
+          )
         ],
       ),
     );

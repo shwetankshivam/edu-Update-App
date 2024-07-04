@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:update/helper/helper_method.dart';
 import 'package:update/utils/FeedPost.dart';
 import 'package:update/utils/MyButton.dart';
 import 'package:update/utils/TextField.dart';
@@ -88,7 +89,7 @@ class _HomepageState extends State<Homepage> {
                           user: post["UserEmail"],
                           postId: post.id,
                           likes: List<String>.from(post['Likes'] ?? []),
-                          // time: time)
+                          time: formatDate(post["TimeStamp"]),
                         );
                       },
                     );

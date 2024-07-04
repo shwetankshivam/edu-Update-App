@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:update/utils/MyButton.dart';
 import 'package:update/utils/TextField.dart';
 
@@ -49,7 +50,17 @@ class _LoginState extends State<Login> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(message),
+        backgroundColor: Colors.white,
+        title: Center(
+          child: Text(
+            message,
+            style: const TextStyle(
+              color: Colors.red,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
       ),
     );
   }
