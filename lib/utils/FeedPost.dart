@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:update/helper/helper_method.dart';
+import 'package:update/utils/Delete_Button.dart';
 import 'package:update/utils/Like_Button.dart';
 import 'package:update/utils/comment.dart';
 import 'package:update/utils/comment_button.dart';
@@ -147,6 +148,58 @@ class _FeedPostState extends State<FeedPost> {
     );
   }
 
+//delete post method
+
+  void deletePost() {
+    //show a confirmation dialog box
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text("Delete Update"),
+              content:
+                  const Text("Are you sure you want to delete this Update?"),
+              actions: [
+                //cancel button
+                TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Cancel")),
+
+                //Delete button
+                TextButton(
+                    onPressed: () async {
+                      //delete the comments first
+                      final commentDocs = await FirebaseFirestore.instance
+                          .collection("User Posts")
+                          .doc(widget.postId)
+                          .collection("Comments")
+                          .get();
+
+                      for (var doc in commentDocs.docs) {
+                        await FirebaseFirestore.instance
+                            .collection("User Posts")
+                            .doc(widget.postId)
+                            .collection("Comments")
+                            .doc(doc.id)
+                            .delete();
+                      }
+
+                      //delete the post
+                      FirebaseFirestore.instance
+                          .collection("User Posts")
+                          .doc(widget.postId)
+                          .delete()
+                          .then((value) => print("Update deleted"))
+                          .catchError((error) =>
+                              print("failed to delete Update: $error"));
+
+                      //dismiss the dialog box
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Delete")),
+              ],
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -164,6 +217,8 @@ class _FeedPostState extends State<FeedPost> {
             children: [
               //user and post
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     widget.user,
@@ -180,6 +235,9 @@ class _FeedPostState extends State<FeedPost> {
                         color: Colors.grey.shade700,
                         fontWeight: FontWeight.normal),
                   ),
+                  Spacer(),
+                  if (widget.user == currentUser.email)
+                    DeleteButton(onTap: deletePost),
                 ],
               ),
               const SizedBox(height: 3),
@@ -207,7 +265,7 @@ class _FeedPostState extends State<FeedPost> {
                   ),
                 ],
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 12),
               //comment
               Column(
                 children: [
@@ -216,7 +274,7 @@ class _FeedPostState extends State<FeedPost> {
                   const SizedBox(height: 1),
                   //comment counter
                   Text(
-                    '0',
+                    'reply',
                     style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                 ],
