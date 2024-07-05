@@ -73,7 +73,7 @@ class _HomepageState extends State<Homepage> {
                     .collection("User Posts")
                     .orderBy(
                       "TimeStamp",
-                      descending: false,
+                      descending: true,
                     )
                     .snapshots(),
                 builder: (context, snapshot) {

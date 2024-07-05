@@ -290,7 +290,7 @@ class _FeedPostState extends State<FeedPost> {
                       .collection("User Posts")
                       .doc(widget.postId)
                       .collection("Comments")
-                      .orderBy("CommentTime", descending: true)
+                      .orderBy("CommentTime", descending: false)
                       .snapshots(),
                   builder: (context, snapshot) {
                     //show the loading circle if data empty
