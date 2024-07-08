@@ -25,6 +25,15 @@ class _RegisterState extends State<Register> {
         child: CircularProgressIndicator.adaptive(),
       ),
     );
+    // Check if the email ends with .edu
+    if (!emailTextController.text.endsWith('.edu')) {
+      //pop progress circle
+      Navigator.pop(context);
+
+      //show error message
+      displayMessage("Please use an '.edu' email address!");
+      return;
+    }
 
     if (passwordTextController.text != confirmPasswordTextController.text) {
       //pop progress circle
@@ -64,8 +73,8 @@ class _RegisterState extends State<Register> {
             message,
             style: const TextStyle(
               color: Colors.red,
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),

@@ -25,6 +25,16 @@ class _LoginState extends State<Login> {
               child: CircularProgressIndicator.adaptive(),
             ));
 
+    //email validator
+
+    if (!emailTextController.text.endsWith('.edu')) {
+      //pop progress circle
+      Navigator.pop(context);
+
+      //show error message
+      displayMessage("Please use an '.edu' email address!");
+      return;
+    }
     //try signing in
 
     try {
@@ -56,8 +66,8 @@ class _LoginState extends State<Login> {
             message,
             style: const TextStyle(
               color: Colors.red,
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),
@@ -86,18 +96,18 @@ class _LoginState extends State<Login> {
                   color: Colors.black,
                 ),
                 const SizedBox(
-                  height: 10,
+                  height: 15,
                 ),
                 //welcome back message
                 const Text(
-                  'Please login to continue',
+                  'Please use .edu email to login',
                   style: TextStyle(
                       color: Colors.black,
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.w300),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 25),
 
                 //email
                 MyTextField(
