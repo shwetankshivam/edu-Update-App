@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:update/auth/auth.dart';
+import 'package:update/auth/email_verifiy.dart';
 import 'package:update/utils/MyButton.dart';
 import 'package:update/utils/TextField.dart';
 
@@ -18,43 +19,60 @@ class _LoginState extends State<Login> {
   final passwordTextController = TextEditingController();
 
   void signIn() async {
-    //progress circle
+    // Show progress circle
     showDialog(
-        context: context,
-        builder: (context) => const Center(
-              child: CircularProgressIndicator.adaptive(),
-            ));
-
-    //email validator
-
-    if (!emailTextController.text.endsWith('.edu')) {
-      //pop progress circle
-      Navigator.pop(context);
-
-      //show error message
-      displayMessage("Please use an '.edu' email address!");
-      return;
-    }
-    //try signing in
+      context: context,
+      // barrierDismissible: false, // Prevents closing by tapping outside
+      builder: (context) => Center(child: CircularProgressIndicator.adaptive()),
+    );
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: emailTextController.text,
-          password: passwordTextController.text);
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailTextController.text.trim(),
+        password: passwordTextController.text.trim(),
+      );
+      if (context.mounted) {
+        Navigator.pop(context); // Close progress indicator
+      }
 
-      //pop progrss circle
+      User? user = FirebaseAuth.instance.currentUser;
+      await user?.reload(); // Ensure user data is refreshed
+      user = FirebaseAuth.instance.currentUser;
 
-      if (context.mounted) Navigator.pop(context);
+      if (context.mounted) {
+        Navigator.pop(context); // Close progress indicator
+      }
+
+      if (user != null) {
+        if (user.emailVerified) {
+          if (context.mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => AuthPage()),
+            );
+          }
+        } else {
+          if (context.mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => EmailVerificationPage(user: user)),
+            );
+          }
+        }
+      } else {
+        if (context.mounted) {
+          displayMessage("User not found!");
+        }
+      }
     } on FirebaseAuthException catch (e) {
-      //pop progress circle
-      Navigator.pop(context);
-
-      //display error message
-      displayMessage(e.code);
+      if (context.mounted) {
+        Navigator.pop(context); // Close progress indicator on error
+        displayMessage(e.message ?? "Login failed");
+      }
     }
   }
-
-  // error message
 
   void displayMessage(String message) {
     showDialog(
@@ -71,6 +89,12 @@ class _LoginState extends State<Login> {
             ),
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
       ),
     );
   }
@@ -82,23 +106,16 @@ class _LoginState extends State<Login> {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 35.0),
+            padding: const EdgeInsets.symmetric(horizontal: 35.0),
             child: Column(
-              // mainAxisAlignment: MainAxisAlignment.center,
-              // crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 100),
-
-                //app logo
                 const Icon(
                   CupertinoIcons.person_crop_circle,
                   size: 60,
                   color: Colors.black,
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
-                //welcome back message
+                const SizedBox(height: 15),
                 const Text(
                   'Please use .edu email to login',
                   style: TextStyle(
@@ -106,38 +123,27 @@ class _LoginState extends State<Login> {
                       fontSize: 18,
                       fontWeight: FontWeight.w300),
                 ),
-
                 const SizedBox(height: 25),
-
-                //email
                 MyTextField(
                     controller: emailTextController,
                     obsecureText: false,
                     hintText: "name@s.amity.edu"),
-
                 const SizedBox(height: 15),
-
-                //password
                 MyTextField(
                     controller: passwordTextController,
                     obsecureText: true,
                     hintText: "Password"),
                 const SizedBox(height: 30),
-
-                //sign in button
-
                 MyButton(
                   text: "Login",
                   onTap: signIn,
                 ),
                 const SizedBox(height: 20),
-
-                //register page
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'new user?',
+                      'New user?',
                       style: TextStyle(
                           color: Colors.black,
                           fontSize: 15,

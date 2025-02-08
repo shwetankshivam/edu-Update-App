@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:update/auth/email_verifiy.dart';
 import 'package:update/auth/login_or_register.dart';
 import 'package:update/utils/Homepage.dart';
 
@@ -10,17 +10,24 @@ class AuthPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StreamBuilder(
+      body: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
-        // Initialize FlutterFire
-
         builder: (context, snapshot) {
-          //user is logged in
-          if (snapshot.hasData) {
-            return Homepage();
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+                child: CircularProgressIndicator
+                    .adaptive()); // Show loading while checking
+          }
+
+          final user = snapshot.data;
+
+          if (user == null) {
+            return const LoginOrRegister(); // Show login/register screen
+          } else if (!user.emailVerified) {
+            return EmailVerificationPage(
+                user: user); // Force email verification
           } else {
-            //not logged in
-            return const LoginOrRegister();
+            return Homepage(); // Navigate to home if verified
           }
         },
       ),

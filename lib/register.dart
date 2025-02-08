@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:update/auth/email_verifiy.dart';
 import 'package:update/utils/MyButton.dart';
 import 'package:update/utils/TextField.dart';
 
@@ -18,51 +19,66 @@ class _RegisterState extends State<Register> {
   final confirmPasswordTextController = TextEditingController();
 
   void signUp() async {
-    //progress circle
     showDialog(
       context: context,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator.adaptive(),
-      ),
+      // barrierDismissible: false,
+      builder: (context) =>
+          const Center(child: CircularProgressIndicator.adaptive()),
     );
-    // Check if the email ends with .edu
-    if (!emailTextController.text.endsWith('.edu')) {
-      //pop progress circle
-      Navigator.pop(context);
 
-      //show error message
+    if (!emailTextController.text.endsWith('.edu')) {
+      Navigator.pop(context);
       displayMessage("Please use an '.edu' email address!");
       return;
     }
 
     if (passwordTextController.text != confirmPasswordTextController.text) {
-      //pop progress circle
       Navigator.pop(context);
-
-      //show error message
       displayMessage("Passwords don't match!");
       return;
     }
 
-    //try creating the user
-
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: emailTextController.text,
-          password: passwordTextController.text);
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailTextController.text.trim(),
+        password: passwordTextController.text.trim(),
+      );
 
-      //pop progrss circle
-      if (context.mounted) Navigator.pop(context);
+      User? user = userCredential.user;
+      await user?.sendEmailVerification();
+
+      if (context.mounted) {
+        Navigator.pop(context); // Close progress dialog
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => EmailVerificationPage(user: user)),
+        );
+      }
     } on FirebaseAuthException catch (e) {
-      //pop progress circle
       Navigator.pop(context);
-
-      //show user the error message
-      displayMessage(e.code);
+      displayMessage(e.message ?? "Registration failed");
     }
   }
-  // error message
 
+  // Improved Firebase error messages
+  String _getFirebaseErrorMessage(String errorCode) {
+    switch (errorCode) {
+      case 'email-already-in-use':
+        return "This email is already in use!";
+      case 'weak-password':
+        return "Your password is too weak!";
+      case 'invalid-email':
+        return "Invalid email format!";
+      case 'operation-not-allowed':
+        return "Sign-up is currently disabled!";
+      default:
+        return "Registration failed! Please try again.";
+    }
+  }
+
+  // Display error messages
   void displayMessage(String message) {
     showDialog(
       context: context,
@@ -89,23 +105,18 @@ class _RegisterState extends State<Register> {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 35.0),
+            padding: const EdgeInsets.symmetric(horizontal: 35.0),
             child: Column(
-              // mainAxisAlignment: MainAxisAlignment.center,
-              // crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 100),
-
-                //app logo
+                // App logo
                 const Icon(
                   CupertinoIcons.person_crop_circle_badge_plus,
                   size: 60,
                   color: Colors.black,
                 ),
-                const SizedBox(
-                  height: 8,
-                ),
-                //welcome back message
+                const SizedBox(height: 8),
+                // Registration message
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -126,41 +137,39 @@ class _RegisterState extends State<Register> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 40),
 
-                //email
+                // Email field
                 MyTextField(
                     controller: emailTextController,
                     obsecureText: false,
                     hintText: "name@s.amity.edu"),
-
                 const SizedBox(height: 20),
 
-                //password
+                // Password field
                 MyTextField(
                     controller: passwordTextController,
                     obsecureText: true,
                     hintText: "Password"),
                 const SizedBox(height: 20),
-                // confirm password
+
+                // Confirm Password field
                 MyTextField(
                     controller: confirmPasswordTextController,
                     obsecureText: true,
                     hintText: "Confirm Password"),
                 const SizedBox(height: 20),
 
-                //sign up button
-
+                // Sign-up button
                 MyButton(text: "Sign up", onTap: signUp),
                 const SizedBox(height: 20),
 
-                //register page
+                // Login link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'already have an account?',
+                      'Already have an account?',
                       style: TextStyle(
                           color: Colors.black,
                           fontSize: 12,

@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:update/auth/auth.dart';
+import 'package:update/utils/Homepage.dart';
 // import 'package:update/auth/login_or_register.dart';
 // import 'package:update/utils/Homepage.dart';
 import 'firebase_options.dart';
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Flutter Demo',
+      title: 'UPDATE',
       debugShowCheckedModeBanner: false,
       home: AuthPage(),
     );
