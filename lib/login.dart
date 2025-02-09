@@ -25,6 +25,14 @@ class _LoginState extends State<Login> {
       // barrierDismissible: false, // Prevents closing by tapping outside
       builder: (context) => Center(child: CircularProgressIndicator.adaptive()),
     );
+    //email validator
+    if (!emailTextController.text.endsWith('.amity.edu')) {
+      //pop progress circle
+      Navigator.pop(context);
+      //show error message
+      displayMessage("Please use an '.amity.edu' email address!");
+      return;
+    }
 
     try {
       UserCredential userCredential =
@@ -117,7 +125,7 @@ class _LoginState extends State<Login> {
                 ),
                 const SizedBox(height: 15),
                 const Text(
-                  'Please use .edu email to login',
+                  'Please use .amity.edu email to login',
                   style: TextStyle(
                       color: Colors.black,
                       fontSize: 18,
