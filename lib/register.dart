@@ -111,7 +111,7 @@ class _RegisterState extends State<Register> {
                 const SizedBox(height: 100),
                 // App logo
                 const Icon(
-                  CupertinoIcons.person_crop_circle_badge_plus,
+                  CupertinoIcons.person_badge_plus,
                   size: 60,
                   color: Colors.black,
                 ),

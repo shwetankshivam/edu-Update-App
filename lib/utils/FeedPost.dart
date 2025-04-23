@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // Add this import
 import 'package:update/helper/helper_method.dart';
 import 'package:update/utils/Delete_Button.dart';
 import 'package:update/utils/Like_Button.dart';
@@ -17,28 +14,25 @@ class FeedPost extends StatefulWidget {
   final String postId;
   final String time;
   final List<String> likes;
+  final VoidCallback? onDelete; // Add onDelete callback
 
-  // final String time;
-  const FeedPost(
-      {super.key,
-      required this.message,
-      required this.user,
-      required this.postId,
-      required this.likes,
-      required this.time
-
-      // required this.time,
-      });
+  const FeedPost({
+    super.key,
+    required this.message,
+    required this.user,
+    required this.postId,
+    required this.likes,
+    required this.time,
+    this.onDelete, // Initialize onDelete callback
+  });
 
   @override
   State<FeedPost> createState() => _FeedPostState();
 }
 
 class _FeedPostState extends State<FeedPost> {
-  //user
   final currentUser = FirebaseAuth.instance.currentUser!;
   bool isliked = false;
-  //comment text controller
   final commentTextController = TextEditingController();
 
   @override
@@ -47,32 +41,35 @@ class _FeedPostState extends State<FeedPost> {
     isliked = widget.likes.contains(currentUser.email);
   }
 
-  //toggle likes
+  void showToastMessage(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+    );
+  }
+
   void toggleLike() {
     setState(() {
       isliked = !isliked;
     });
 
-    //access document in firebase
     DocumentReference postRef =
         FirebaseFirestore.instance.collection('User Posts').doc(widget.postId);
 
     if (isliked) {
-      //if post is liked, add user's email to the likes field
       postRef.update({
         'Likes': FieldValue.arrayUnion([currentUser.email])
       });
     } else {
-      //if post is unliked, remove user's email to the likes field
       postRef.update({
         'Likes': FieldValue.arrayRemove([currentUser.email])
       });
     }
   }
 
-//add a comment
   void addComment(String commentText) {
-    //write a comment in comment collection in firestore
     FirebaseFirestore.instance
         .collection('User Posts')
         .doc(widget.postId)
@@ -81,10 +78,13 @@ class _FeedPostState extends State<FeedPost> {
       "CommentText": commentText,
       "CommentedBy": currentUser.email,
       "CommentTime": Timestamp.now()
+    }).then((_) {
+      // Show toast message after comment is posted
+      showToastMessage("Posted...");
+    }).catchError((error) {
+      print("Error posting comment: $error");
     });
   }
-
-  //dialog to add a comment
 
   void showCommentBox() {
     showDialog(
@@ -92,24 +92,15 @@ class _FeedPostState extends State<FeedPost> {
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         title: const Text(
-          "Update",
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.black,
-          ),
+          "Share your thoughts..",
+          style: TextStyle(fontSize: 20, color: Colors.black),
         ),
         content: TextField(
           controller: commentTextController,
-          decoration: const InputDecoration(
-            hintText: "reply to this update..",
-          ),
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-          ),
+          decoration: const InputDecoration(hintText: "Reply to this update.."),
+          style: const TextStyle(color: Colors.black, fontSize: 16),
         ),
         actions: [
-          //cancel
           TextButton(
             onPressed: () {
               Navigator.pop(context);
@@ -117,30 +108,26 @@ class _FeedPostState extends State<FeedPost> {
             },
             child: const Text(
               "Cancel",
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 18,
-                fontWeight: FontWeight.w300,
-              ),
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w300),
             ),
           ),
-          //save
           TextButton(
             onPressed: () {
               addComment(commentTextController.text);
-              //pop comment box
-              Navigator.pop(context);
-
-              //clear comment line
+              Navigator.pop(context); // Close dialog
               commentTextController.clear();
+              // Show toast message after replying
+              showToastMessage("Posted...");
             },
             child: const Text(
               "Done",
               style: TextStyle(
-                color: Colors.blue,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
+                  color: Colors.blue,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -148,74 +135,79 @@ class _FeedPostState extends State<FeedPost> {
     );
   }
 
-//delete post method
-
   void deletePost() {
-    //show a confirmation dialog box
+    // Show a confirmation dialog box
     showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              title: const Text("Delete Update"),
-              content:
-                  const Text("Are you sure you want to delete this Update?"),
-              actions: [
-                //cancel button
-                TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("Cancel")),
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Update"),
+        content: const Text("Are you sure you want to delete this Update?"),
+        actions: [
+          // Cancel button
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
 
-                //Delete button
-                TextButton(
-                    onPressed: () async {
-                      //delete the comments first
-                      final commentDocs = await FirebaseFirestore.instance
-                          .collection("User Posts")
-                          .doc(widget.postId)
-                          .collection("Comments")
-                          .get();
+          // Delete button
+          TextButton(
+              onPressed: () async {
+                // Delete the comments first
+                final commentDocs = await FirebaseFirestore.instance
+                    .collection("User Posts")
+                    .doc(widget.postId)
+                    .collection("Comments")
+                    .get();
 
-                      for (var doc in commentDocs.docs) {
-                        await FirebaseFirestore.instance
-                            .collection("User Posts")
-                            .doc(widget.postId)
-                            .collection("Comments")
-                            .doc(doc.id)
-                            .delete();
-                      }
+                for (var doc in commentDocs.docs) {
+                  await FirebaseFirestore.instance
+                      .collection("User Posts")
+                      .doc(widget.postId)
+                      .collection("Comments")
+                      .doc(doc.id)
+                      .delete();
+                }
 
-                      //delete the post
-                      FirebaseFirestore.instance
-                          .collection("User Posts")
-                          .doc(widget.postId)
-                          .delete()
-                          .then((value) => print("Update deleted"))
-                          .catchError((error) =>
-                              print("failed to delete Update: $error"));
+                // Delete the post
+                FirebaseFirestore.instance
+                    .collection("User Posts")
+                    .doc(widget.postId)
+                    .delete()
+                    .then((value) {
+                  // Show toast message after post is deleted
+                  showToastMessage("Deleted...");
+                  print("Update deleted");
+                }).catchError(
+                        (error) => print("Failed to delete update: $error"));
 
-                      //dismiss the dialog box
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Delete")),
-              ],
-            ));
+                // Dismiss the dialog box
+                Navigator.pop(context);
+              },
+              child: const Text("Delete")),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-          color: Colors.grey.shade100, borderRadius: BorderRadius.circular(10)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.grey.shade900,
+          width: 0.3,
+        ),
+      ),
       margin: const EdgeInsets.only(top: 20, left: 25, right: 25),
       padding: const EdgeInsets.all(15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(width: 10),
-          // message and user email
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              //user and post
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,7 +229,9 @@ class _FeedPostState extends State<FeedPost> {
                   ),
                   const Spacer(),
                   if (widget.user == currentUser.email)
-                    DeleteButton(onTap: deletePost),
+                    DeleteButton(
+                        onTap: widget.onDelete ??
+                            deletePost), // Pass the onDelete callback
                 ],
               ),
               const SizedBox(height: 3),
@@ -249,16 +243,13 @@ class _FeedPostState extends State<FeedPost> {
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              //like
               Column(
                 children: [
-                  //like button
                   LikeButton(
                     isliked: isliked,
                     onTap: toggleLike,
                   ),
                   const SizedBox(height: 1),
-                  //like counter
                   Text(
                     widget.likes.length.toString(),
                     style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
@@ -266,57 +257,48 @@ class _FeedPostState extends State<FeedPost> {
                 ],
               ),
               const SizedBox(width: 12),
-              //comment
               Column(
                 children: [
-                  //comment button,
                   CommentButton(onTap: showCommentBox),
                   const SizedBox(height: 1),
-                  //comment counter
                   Text(
-                    'reply',
+                    'Reply',
                     style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                 ],
               ),
             ],
           ),
-
-          //comments under post
           Column(
             children: [
               StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection("User Posts")
-                      .doc(widget.postId)
-                      .collection("Comments")
-                      .orderBy("CommentTime", descending: false)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    //show the loading circle if data empty
-                    if (!snapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator.adaptive(),
+                stream: FirebaseFirestore.instance
+                    .collection("User Posts")
+                    .doc(widget.postId)
+                    .collection("Comments")
+                    .orderBy("CommentTime", descending: false)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(
+                        child: CircularProgressIndicator.adaptive());
+                  }
+                  return ListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: snapshot.data!.docs.map((doc) {
+                      final commentData = doc.data() as Map<String, dynamic>;
+                      return Comment(
+                        text: commentData["CommentText"],
+                        time: commentData["CommentedBy"],
+                        user: formatDate(commentData["CommentTime"]),
                       );
-                    }
-                    return ListView(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: snapshot.data!.docs.map((doc) {
-                        //get the comments from firebase
-                        final commentData = doc.data() as Map<String, dynamic>;
-
-                        //return to the listview
-                        return Comment(
-                          text: commentData["CommentText"],
-                          time: commentData["CommentedBy"],
-                          user: formatDate(commentData["CommentTime"]),
-                        );
-                      }).toList(),
-                    );
-                  }),
+                    }).toList(),
+                  );
+                },
+              ),
             ],
-          )
+          ),
         ],
       ),
     );

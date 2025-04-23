@@ -11,7 +11,11 @@ class Comment extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         decoration: BoxDecoration(
-          color: Colors.grey.shade300,
+          border: Border.all(
+            color: Colors.grey.shade700,
+            width: 0.5,
+          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(8),
         ),
         margin: EdgeInsets.only(top: 6),

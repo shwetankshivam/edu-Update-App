@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:update/helper/helper_method.dart';
 import 'package:update/utils/FeedPost.dart';
-// import 'package:update/utils/MyButton.dart';
 import 'package:update/utils/TextField.dart';
 
 class Homepage extends StatefulWidget {
@@ -14,48 +13,137 @@ class Homepage extends StatefulWidget {
   State<Homepage> createState() => _HomepageState();
 }
 
-//current user
+// current user
 final currentUser = FirebaseAuth.instance.currentUser!;
-//test controller
+// text controller
 final textController = TextEditingController();
-//log out user
-void signOut() {
-  FirebaseAuth.instance.signOut();
-}
-
-//post message
-
-postMessage() {
-  //only post if there is a post in text field
-  if (textController.text.isNotEmpty) {
-    FirebaseFirestore.instance.collection("User Posts").add({
-      'UserEmail': currentUser.email,
-      'Message': textController.text,
-      'TimeStamp': Timestamp.now(),
-      'Likes': [],
-    });
-  }
-
-  //clear the text field
-  textController.clear();
-}
 
 class _HomepageState extends State<Homepage> {
+  // ScrollController to manage scroll behavior
+  final ScrollController _scrollController = ScrollController();
+  bool isLoading = false;
+  bool isDeleting = false;
+
+  @override
+  void dispose() {
+    // Dispose of the controller when the widget is disposed
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // Log out user
+  void signOut() {
+    FirebaseAuth.instance.signOut();
+  }
+
+  // Post message and auto-scroll to the bottom
+  postMessage() async {
+    if (textController.text.isNotEmpty) {
+      setState(() {
+        isLoading = true;
+      });
+
+      try {
+        // Add the post to Firestore
+        await FirebaseFirestore.instance.collection("User Posts").add({
+          'UserEmail': currentUser.email,
+          'Message': textController.text,
+          'TimeStamp': Timestamp.now(),
+          'Likes': [],
+        });
+      } catch (e) {
+        print("Error posting message: $e");
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
+
+        // Clear the text field after posting
+        textController.clear();
+
+        // Scroll to the bottom after posting
+        Future.delayed(Duration(milliseconds: 300), () {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        });
+      }
+    }
+  }
+
+  // Delete post
+  deletePost(String postId) async {
+    setState(() {
+      isDeleting = true;
+    });
+
+    try {
+      // Delete the post from Firestore
+      await FirebaseFirestore.instance
+          .collection("User Posts")
+          .doc(postId)
+          .delete();
+      setState(() {
+        isDeleting = false;
+      });
+    } catch (e) {
+      print("Error deleting post: $e");
+      setState(() {
+        isDeleting = false;
+      });
+    }
+  }
+
+  // Confirm delete post
+  confirmDelete(String postId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Are you sure?"),
+          content: const Text(
+              "Do you want to delete this post? This action cannot be undone."),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                deletePost(postId);
+              },
+              child: const Text("Delete"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.grey.shade100,
+        backgroundColor: Colors.white,
         title: const Text(
           'UPDATE',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(
+            color: Colors.black,
+            decoration: TextDecoration.underline,
+            decorationThickness: .5,
+          ),
         ),
-        actions: const [
+        actions: [
           TextButton(
             onPressed: signOut,
-            child: Text(
+            child: const Text(
               "sign out",
               style: TextStyle(
                   fontSize: 17, color: Colors.red, fontWeight: FontWeight.w500),
@@ -66,36 +154,39 @@ class _HomepageState extends State<Homepage> {
       body: Center(
         child: Column(
           children: [
-            //UPDATE App posts from server
+            // UPDATE App posts from server
             Expanded(
               child: StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection("User Posts")
-                    .orderBy(
-                      "TimeStamp",
-                      descending: true,
-                    )
+                    .orderBy("TimeStamp", descending: false)
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return ListView.builder(
+                      controller: _scrollController, // Set controller here
                       itemCount: snapshot.data!.docs.length,
                       itemBuilder: (context, index) {
                         final post = snapshot.data!.docs[index];
 
-                        //get the message
+                        // Get the message
                         return FeedPost(
                           message: post["Message"],
                           user: post["UserEmail"],
                           postId: post.id,
                           likes: List<String>.from(post['Likes'] ?? []),
                           time: formatDate(post["TimeStamp"]),
+                          onDelete: currentUser.email == post["UserEmail"]
+                              ? () => confirmDelete(post.id)
+                              : null,
                         );
                       },
                     );
                   } else if (snapshot.hasError) {
                     return Center(
-                      child: Text('Error: ${snapshot.error} '),
+                      child: Text(
+                          'Something went wrong. Please try again later.',
+                          style: TextStyle(color: Colors.red)),
                     );
                   }
                   return const Center(
@@ -105,7 +196,7 @@ class _HomepageState extends State<Homepage> {
               ),
             ),
 
-            //creating posts
+            // Creating posts
             Padding(
               padding: const EdgeInsets.all(18.0),
               child: Row(
@@ -113,32 +204,37 @@ class _HomepageState extends State<Homepage> {
                   Expanded(
                     child: MyTextField(
                       controller: textController,
-                      hintText: "write an Update",
+                      hintText: "Write an Update",
                       obsecureText: false,
                     ),
                   ),
                   const SizedBox(width: 5),
-                  const IconButton(
-                    onPressed: postMessage,
-                    icon: Icon(
-                      CupertinoIcons.chevron_right_2,
-                      size: 33,
-                      color: Colors.black,
-                    ),
-                  )
+                  isLoading
+                      ? const CircularProgressIndicator.adaptive()
+                      : IconButton(
+                          onPressed: postMessage,
+                          icon: const Icon(
+                            CupertinoIcons.chevron_right_2,
+                            size: 33,
+                            color: Colors.black,
+                          ),
+                        ),
                 ],
               ),
             ),
-            //user logged in as
+            // User logged in as
             SafeArea(
               child: Text(
-                "logged in as ${currentUser.email!}",
+                "Logged in as ${currentUser.email!}",
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 14,
                 ),
               ),
             ),
+            // Show progress indicator if deleting
+            if (isDeleting)
+              const Center(child: CircularProgressIndicator.adaptive()),
           ],
         ),
       ),

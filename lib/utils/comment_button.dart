@@ -12,7 +12,7 @@ class CommentButton extends StatelessWidget {
       child: const Icon(
         size: 20,
         CupertinoIcons.arrow_turn_down_left,
-        color: Colors.grey,
+        color: Colors.blue,
       ),
     );
   }

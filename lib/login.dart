@@ -119,17 +119,30 @@ class _LoginState extends State<Login> {
               children: [
                 const SizedBox(height: 100),
                 const Icon(
-                  CupertinoIcons.person_crop_circle,
+                  CupertinoIcons.person,
                   size: 60,
                   color: Colors.black,
                 ),
                 const SizedBox(height: 15),
-                const Text(
-                  'Please use .amity.edu email to login',
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w300),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Please Login using ',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w300),
+                    ),
+                    Text(
+                      '.edu email',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          decoration: TextDecoration.underline),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 25),
                 MyTextField(

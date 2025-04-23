@@ -1,1 +1,44 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"edu-update-app","appId":"1:784965918678:android:493764c8fb07824d290e77","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"edu-update-app","appId":"1:784965918678:ios:034d16e6acf6dc63290e77","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"edu-update-app","configurations":{"android":"1:784965918678:android:493764c8fb07824d290e77","ios":"1:784965918678:ios:034d16e6acf6dc63290e77"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "edu-update-app",
+          "appId": "1:784965918678:android:493764c8fb07824d290e77",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "edu-update-app",
+          "appId": "1:784965918678:ios:034d16e6acf6dc63290e77",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "edu-update-app",
+          "configurations": {
+            "android": "1:784965918678:android:493764c8fb07824d290e77",
+            "ios": "1:784965918678:ios:034d16e6acf6dc63290e77"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
