@@ -1,9 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:update/auth/auth.dart';
-// import 'package:update/utcleils/Homepage.dart';
-// import 'package:update/auth/login_or_register.dart';
-// import 'package:update/utils/Homepage.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -11,13 +9,14 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(const AppWrapper());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AppWrapper extends StatelessWidget {
+  const AppWrapper({super.key});
 
-  // This widget is the root of your application.
+  bool isWebOrDesktop() => kIsWeb;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -25,7 +24,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
-        primaryColor: Colors.white, // Deep purple (you can change)
+        primaryColor: Colors.white,
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
@@ -34,7 +33,6 @@ class MyApp extends StatelessWidget {
           titleTextStyle: TextStyle(
             color: Colors.black,
             fontSize: 20,
-            // fontWeight: FontWeight.bold,
           ),
         ),
         textTheme: const TextTheme(
@@ -46,7 +44,21 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      home: const AuthPage(),
+      home: LayoutBuilder(
+        builder: (_, constraints) {
+          if (isWebOrDesktop()) {
+            return Center(
+              child: Container(
+                width: 480,
+                color: Colors.white,
+                child: const AuthPage(),
+              ),
+            );
+          } else {
+            return const AuthPage();
+          }
+        },
+      ),
     );
   }
 }

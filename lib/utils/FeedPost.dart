@@ -70,20 +70,27 @@ class _FeedPostState extends State<FeedPost> {
   }
 
   void addComment(String commentText) {
-    FirebaseFirestore.instance
-        .collection('User Posts')
-        .doc(widget.postId)
-        .collection("Comments")
-        .add({
-      "CommentText": commentText,
-      "CommentedBy": currentUser.email,
-      "CommentTime": Timestamp.now()
-    }).then((_) {
-      // Show toast message after comment is posted
-      showToastMessage("Posted...");
-    }).catchError((error) {
-      print("Error posting comment: $error");
-    });
+    String trimmedComment = commentText.trim();
+
+    if (trimmedComment.isNotEmpty) {
+      FirebaseFirestore.instance
+          .collection('User Posts')
+          .doc(widget.postId)
+          .collection("Comments")
+          .add({
+        "CommentText": trimmedComment,
+        "CommentedBy": currentUser.email,
+        "CommentTime": Timestamp.now()
+      }).then((_) {
+        showToastMessage("Posted...");
+        commentTextController.clear();
+        Navigator.pop(context); // Close dialog
+      }).catchError((error) {
+        print("Error posting comment: $error");
+      });
+    } else {
+      showToastMessage("Comment cannot be empty.");
+    }
   }
 
   void showCommentBox() {
@@ -117,17 +124,14 @@ class _FeedPostState extends State<FeedPost> {
           TextButton(
             onPressed: () {
               addComment(commentTextController.text);
-              Navigator.pop(context); // Close dialog
-              commentTextController.clear();
-              // Show toast message after replying
-              showToastMessage("Posted...");
             },
             child: const Text(
               "Done",
               style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500),
+                color: Colors.blue,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],

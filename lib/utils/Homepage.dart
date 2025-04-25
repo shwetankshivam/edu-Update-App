@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:update/helper/helper_method.dart';
 import 'package:update/utils/FeedPost.dart';
 import 'package:update/utils/TextField.dart';
@@ -36,21 +37,27 @@ class _HomepageState extends State<Homepage> {
     FirebaseAuth.instance.signOut();
   }
 
-  // Post message and auto-scroll to the bottom
   postMessage() async {
-    if (textController.text.isNotEmpty) {
+    String trimmedText = textController.text.trim();
+
+    if (trimmedText.isNotEmpty) {
       setState(() {
         isLoading = true;
       });
 
       try {
-        // Add the post to Firestore
         await FirebaseFirestore.instance.collection("User Posts").add({
           'UserEmail': currentUser.email,
-          'Message': textController.text,
+          'Message': trimmedText,
           'TimeStamp': Timestamp.now(),
           'Likes': [],
         });
+
+        Fluttertoast.showToast(
+          msg: "Post submitted!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+        );
       } catch (e) {
         print("Error posting message: $e");
       } finally {
@@ -58,10 +65,8 @@ class _HomepageState extends State<Homepage> {
           isLoading = false;
         });
 
-        // Clear the text field after posting
         textController.clear();
 
-        // Scroll to the bottom after posting
         Future.delayed(Duration(milliseconds: 300), () {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
@@ -70,6 +75,12 @@ class _HomepageState extends State<Homepage> {
           );
         });
       }
+    } else {
+      Fluttertoast.showToast(
+        msg: "Message cannot be empty.",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+      );
     }
   }
 
