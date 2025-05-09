@@ -144,7 +144,7 @@ class _HomepageState extends State<Homepage> {
         elevation: 0,
         backgroundColor: Colors.white,
         title: const Text(
-          'UPDATE',
+          'UNINET',
           style: TextStyle(
             color: Colors.black,
             decoration: TextDecoration.underline,
@@ -215,7 +215,7 @@ class _HomepageState extends State<Homepage> {
                   Expanded(
                     child: MyTextField(
                       controller: textController,
-                      hintText: "Write an Update",
+                      hintText: "write a post..",
                       obsecureText: false,
                     ),
                   ),
